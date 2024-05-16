@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "music-type-distributor",
+  "version-semver": "1.0.0",
+  "builtin-baseline": "2a3ddf7584b9222843855475b3bb9812b43ba288",
+  "dependencies": [
+    "fmt",
+    "spdlog",
+    "rapidcsv",
+    "simpleini",
+    "directxtk",
+    "parallel-hashmap"
+  ],
+  "license": "GPL-3.0-or-later"
+}
