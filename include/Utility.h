@@ -9,7 +9,7 @@ struct FormIDAndPluginName
 class Utility : public Singleton<Utility>
 {
 public:
-    static std::vector<std::string> Split(const std::string_view str)
+    static std::vector<std::string> Split(const std::string_view str) noexcept
     {
         std::vector<std::string>    result;
         std::string_view::size_type pos{};
@@ -37,7 +37,7 @@ public:
 
     static auto ToUnsignedInt(const std::string_view& s) noexcept { return static_cast<unsigned>(std::strtol(s.data(), nullptr, 0)); }
 
-    static FormIDAndPluginName GetFormIDAndPluginName(const std::string_view identifier)
+    static FormIDAndPluginName GetFormIDAndPluginName(const std::string_view identifier) noexcept
     {
         if (const auto tilde{ std::strchr(identifier.data(), '~') }) {
             const auto tilde_pos{ static_cast<int>(tilde - identifier.data()) };
@@ -48,7 +48,7 @@ public:
         return { 0, "" };
     }
 
-    static std::vector<RE::BGSMusicTrackFormWrapper*> BuildFormIDVec(const std::vector<std::string>& tokens)
+    static std::vector<RE::BGSMusicTrackFormWrapper*> BuildFormIDVec(const std::vector<std::string>& tokens) noexcept
     {
         std::vector<RE::BGSMusicTrackFormWrapper*> result;
 

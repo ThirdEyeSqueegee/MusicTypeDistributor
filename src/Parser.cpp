@@ -13,7 +13,7 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
         stl::report_and_fail(fmt::format("{}: Failed to find Data directory", SKSE::PluginDeclaration::GetSingleton()->GetName()));
     }
 
-    logger::info(">--------------------------------Parsing _MUS.ini files...---------------------------------<");
+    logger::info(">------------------------------ Parsing _MUS.ini files... ------------------------------<");
     logger::info("");
 
     const auto start_time{ std::chrono::system_clock::now() };
@@ -58,13 +58,13 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
 
     const auto elapsed{ std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - start_time) };
     logger::info("");
-    logger::info(">-------------------------Finished parsing _MUS.ini files in {} us-------------------------<", elapsed.count());
+    logger::info(">------------------------------ Finished parsing _MUS.ini files in {} us ------------------------------<", elapsed.count());
     logger::info("");
 }
 
 void Parser::PrepareDistrMap() noexcept
 {
-    logger::info(">------------------------------Preparing Distribution...------------------------------<");
+    logger::info(">------------------------------ Preparing Distribution... ------------------------------<");
     logger::info("");
 
     for (const auto& [k, v] : Map::prep_map) {

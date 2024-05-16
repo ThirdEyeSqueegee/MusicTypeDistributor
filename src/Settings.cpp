@@ -18,8 +18,6 @@ void Settings::LoadSettings() noexcept
         logger::debug("Debug logging enabled");
     }
 
-    // Load settings
-
     logger::info("Loaded settings");
     logger::info("");
 
