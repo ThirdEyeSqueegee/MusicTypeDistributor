@@ -49,9 +49,13 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
         logger::debug("{} has {} keys", filename.string(), keys.size());
 
         for (const auto& [key, key_count, key_order] : keys) {
-            const auto value{ ini.GetValue("General", key) };
-            Map::prep_map[key] = value;
-            logger::debug("{}: {}", key, value);
+            logger::debug("Key {} occurs {} times", key, key_count);
+            CSimpleIniA::TNamesDepend values{};
+            ini.GetAllValues("General", key, values);
+            for (const auto& [value, value_count, value_order] : values) {
+                Map::prep_map[key].insert(value);
+                logger::debug("Added [{}: {}] to prep map", key, value);
+            }
         }
         ini.Reset();
     }
@@ -68,11 +72,13 @@ void Parser::PrepareDistrMap() noexcept
     logger::info("");
 
     for (const auto& [k, v] : Map::prep_map) {
+        logger::debug("Processing key {} for distribution map", k);
         auto k_copy{ k };
         bool clear_list{};
         if (k_copy.back() == '!') {
             k_copy     = k_copy.substr(0, k_copy.size() - 1);
             clear_list = true;
+            logger::debug("Clearing list for {}", k_copy);
         }
         logger::debug("Looking up {}", k_copy);
         if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(k_copy) }) {

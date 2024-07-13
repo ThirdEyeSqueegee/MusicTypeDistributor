@@ -1,8 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "music-type-distributor",
-  "version-semver": "1.0.0",
-  "builtin-baseline": "28c4ec8670e356d704827a349751c3454156d808",
+  "version-semver": "1.1.0",
+  "builtin-baseline": "1de2026f28ead93ff1773e6e680387643e914ea1",
   "dependencies": [
     "fmt",
     "spdlog",

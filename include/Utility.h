@@ -9,8 +9,20 @@ struct FormIDAndPluginName
 class Utility : public Singleton<Utility>
 {
 public:
-    static std::vector<std::string> Split(const std::string_view str) noexcept
+    static std::string Join(const std::unordered_set<std::string>& strings) noexcept
     {
+        std::stringstream ss;
+        for (const auto& str : strings) {
+            ss << str << ',';
+        }
+        return ss.str().substr(0, ss.str().size() - 2);
+    }
+
+    static std::vector<std::string> Split(const std::unordered_set<std::string>& strings) noexcept
+    {
+        const auto str{ Join(strings) };
+        logger::debug("Splitting string: {}", str);
+
         std::vector<std::string>    result;
         std::string_view::size_type pos{};
         std::string_view::size_type prev{};
@@ -24,6 +36,8 @@ public:
         if (prev < str.size()) {
             result.emplace_back(str.substr(prev));
         }
+
+        logger::debug("Split result: {} items", result.size());
 
         return result;
     }
@@ -57,7 +71,7 @@ public:
             const auto [form_id, plugin_name]{ GetFormIDAndPluginName(token) };
             if (const auto handler{ RE::TESDataHandler::GetSingleton() }) {
                 if (const auto music_track{ handler->LookupForm<RE::BGSMusicTrackFormWrapper>(form_id, plugin_name) }) {
-                    logger::debug("Found music track {} (0x{:x})", music_track->GetFormEditorID(), music_track->GetFormID());
+                    logger::debug("Found music track {} (0x{:x})", music_track->GetName(), music_track->GetFormID());
                     result.emplace_back(music_track);
                 }
             }

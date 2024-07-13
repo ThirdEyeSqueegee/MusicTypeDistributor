@@ -10,7 +10,7 @@ void Distributor::Distribute() noexcept
 
     for (const auto& [music_type, pair] : Map::distr_map) {
         const auto& [tracks, clear_list]{ pair };
-        const auto music_type_name{ music_type->GetFormEditorID() };
+        const auto music_type_name{ music_type->GetName() };
         const auto music_type_form_id{ music_type->GetFormID() };
         if (clear_list) {
             logger::debug("Clearing {} (0x{:x})", music_type_name, music_type_form_id);
