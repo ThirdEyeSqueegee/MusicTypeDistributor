@@ -9,44 +9,43 @@ struct FormIDAndPluginName
 class Utility : public Singleton<Utility>
 {
 public:
-    static std::string Join(const std::unordered_set<std::string>& strings) noexcept
+    static auto Join(const std::unordered_set<std::string>& strings) noexcept
     {
-        std::stringstream ss;
-        for (const auto& str : strings) {
-            ss << str << ',';
-        }
-        return ss.str().substr(0, ss.str().size() - 2);
-    }
+        std::string result{};
 
-    static std::vector<std::string> Split(const std::unordered_set<std::string>& strings) noexcept
-    {
-        const auto str{ Join(strings) };
-        logger::debug("Splitting string: {}", str);
-
-        std::vector<std::string>    result;
-        std::string_view::size_type pos{};
-        std::string_view::size_type prev{};
-
-        while ((pos = str.find_first_of(',', prev)) != std::string_view::npos) {
-            if (pos > prev) {
-                result.emplace_back(str.substr(prev, pos - prev));
-            }
-            prev = pos + 1;
-        }
-        if (prev < str.size()) {
-            result.emplace_back(str.substr(prev));
+        for (const auto& s : strings) {
+            result += s + ',';
         }
 
-        logger::debug("Split result: {} items", result.size());
+        result = result.substr(0, result.size() - 1);
 
         return result;
     }
 
-    static auto GetPos(const std::string_view s, const char c) noexcept
+    static auto Split(const std::unordered_set<std::string>& strings) noexcept
     {
-        const auto ptr{ std::strrchr(s.data(), c) };
+        auto s{ Join(strings) };
+        logger::debug("Splitting string: {}", s);
 
-        return ptr ? static_cast<std::size_t>(ptr - s.data()) : ULLONG_MAX;
+        std::vector<std::string> result{};
+
+        auto pos{ s.find(',') };
+        while (pos != std::string::npos) {
+            result.emplace_back(s.substr(0, pos));
+            s   = s.substr(pos + 1);
+            pos = s.find(',', pos);
+        }
+
+        if (!s.empty()) {
+            result.emplace_back(s);
+        }
+
+        logger::debug("Split result: {} items", result.size());
+        for (const auto& r : result) {
+            logger::debug("\tSplit item: {}", r);
+        }
+
+        return result;
     }
 
     static auto ToUnsignedInt(const std::string_view& s) noexcept { return static_cast<unsigned>(std::strtol(s.data(), nullptr, 0)); }
@@ -62,7 +61,7 @@ public:
         return { 0, "" };
     }
 
-    static std::vector<RE::BGSMusicTrackFormWrapper*> BuildFormIDVec(const std::vector<std::string>& tokens) noexcept
+    static auto BuildFormIDVec(const std::vector<std::string>& tokens) noexcept
     {
         std::vector<RE::BGSMusicTrackFormWrapper*> result;
 
@@ -71,7 +70,7 @@ public:
             const auto [form_id, plugin_name]{ GetFormIDAndPluginName(token) };
             if (const auto handler{ RE::TESDataHandler::GetSingleton() }) {
                 if (const auto music_track{ handler->LookupForm<RE::BGSMusicTrackFormWrapper>(form_id, plugin_name) }) {
-                    logger::debug("Found music track {} (0x{:x})", music_track->GetName(), music_track->GetFormID());
+                    logger::debug("Found music track 0x{:x}", music_track->GetFormID());
                     result.emplace_back(music_track);
                 }
             }
