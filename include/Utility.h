@@ -23,35 +23,24 @@ public:
     static auto Split(const std::unordered_set<std::string>& strings) noexcept
     {
         auto s{ Join(strings) };
-        logger::debug("Splitting string: {}", s);
 
         std::vector<std::string> result{};
 
-        auto pos{ s.find(',') };
-        while (pos != std::string::npos) {
+        std::size_t pos{};
+        while ((pos = s.find(',')) != std::string::npos) {
             result.emplace_back(s.substr(0, pos));
-            s   = s.substr(pos + 1);
-            pos = s.find(',', pos);
-        }
-
-        if (!s.empty()) {
-            result.emplace_back(s);
-        }
-
-        logger::debug("Split result: {} items", result.size());
-        for (const auto& r : result) {
-            logger::debug("\tSplit item: {}", r);
+            s.erase(0, pos + 1);
         }
 
         return result;
     }
 
-    static auto ToUnsignedInt(const std::string_view& s) noexcept { return static_cast<unsigned>(std::stoul(s.data(), nullptr, 0)); }
+    static auto ToFormID(const std::string_view& s) noexcept { return static_cast<RE::FormID>(std::stoul(s.data(), nullptr, 16)); }
 
-    static FormIDAndPluginName GetFormIDAndPluginName(const std::string_view identifier) noexcept
+    static FormIDAndPluginName GetFormIDAndPluginName(const std::string& identifier) noexcept
     {
         if (const auto tilde{ identifier.find('~') }; tilde != std::string_view::npos) {
-            return { ToUnsignedInt(identifier.substr(0, tilde)), identifier.substr(tilde + 1).data() };
+            return { ToFormID(identifier.substr(0, tilde)), identifier.substr(tilde + 1) };
         }
         logger::error("ERROR: Failed to get FormID and plugin name for {}", identifier);
 
@@ -63,11 +52,11 @@ public:
         std::vector<RE::BGSMusicTrackFormWrapper*> result;
 
         for (const auto& token : tokens) {
-            logger::debug("Processing token {}", token);
+            logger::debug("\tProcessing token: {}", token);
             const auto [form_id, plugin_name]{ GetFormIDAndPluginName(token) };
             if (const auto handler{ RE::TESDataHandler::GetSingleton() }) {
                 if (const auto music_track{ handler->LookupForm<RE::BGSMusicTrackFormWrapper>(form_id, plugin_name) }) {
-                    logger::debug("Found music track 0x{:x}", music_track->GetFormID());
+                    logger::info("\t\tFound music track 0x{:x}", music_track->GetFormID());
                     result.emplace_back(music_track);
                 }
             }

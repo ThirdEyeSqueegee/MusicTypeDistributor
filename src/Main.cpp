@@ -6,6 +6,10 @@
 void Listener(SKSE::MessagingInterface::Message* message) noexcept
 {
     if (message->type == SKSE::MessagingInterface::kDataLoaded) {
+        if (!REX::W32::GetModuleHandleW(L"po3_Tweaks")) {
+            logger::error("ERROR: powerofthree's Tweaks not found");
+            stl::report_and_fail("ERROR [MusicTypeDistributor.dll]: powerofthree's Tweaks not found");
+        }
         Settings::LoadSettings();
         Parser::PrepareDistrMap();
         Distributor::Distribute();

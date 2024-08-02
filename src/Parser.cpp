@@ -45,6 +45,8 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
         mus_inis.insert(path);
     }
 
+    std::regex comma_space{ ", " };
+
     for (const auto& f : mus_inis) {
         const auto filename{ f.filename().string() };
 
@@ -62,8 +64,24 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
             CSimpleIniA::TNamesDepend values{};
             ini.GetAllValues("General", k.pItem, values);
             for (const auto& v : values) {
-                Map::prep_map[k.pItem].insert(v.pItem);
-                logger::debug("Added [{}: {}] to prep map", k.pItem, v.pItem);
+                const auto trimmed{ std::regex_replace(std::string{ v.pItem }, comma_space, ",") };
+                Map::prep_map[k.pItem].insert(trimmed);
+                logger::debug("Added [{}: {}] to prep map", k.pItem, trimmed);
+            }
+        }
+        logger::debug("");
+
+        if (ini.SectionExists("Location")) {
+            CSimpleIniA::TNamesDepend loc_keys{};
+            ini.GetAllKeys("Location", loc_keys);
+
+            for (const auto& k : loc_keys) {
+                CSimpleIniA::TNamesDepend values{};
+                ini.GetAllValues("Location", k.pItem, values);
+                for (const auto& v : values) {
+                    Map::location_prep_map[k.pItem] = v.pItem;
+                    logger::debug("Added [{}: {}] to location prep map", k.pItem, v.pItem);
+                }
             }
         }
 
@@ -81,15 +99,12 @@ void Parser::PrepareDistrMap() noexcept
     logger::info("");
 
     for (const auto& [k, v] : Map::prep_map) {
-        logger::debug("Processing key {} for distribution map", k);
         auto k_copy{ k };
         bool clear_list{};
         if (k_copy.back() == '!') {
             k_copy     = k_copy.substr(0, k_copy.size() - 1);
             clear_list = true;
-            logger::debug("Clearing list for {}", k_copy);
         }
-        logger::debug("Looking up {}", k_copy);
         if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(k_copy) }) {
             logger::info("Found music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
             const auto tokens{ Utility::Split(v) };
@@ -98,6 +113,19 @@ void Parser::PrepareDistrMap() noexcept
         }
     }
 
+    for (const auto& [k, v] : Map::location_prep_map) {
+        const auto [form_id, plugin_name]{ Utility::GetFormIDAndPluginName(k) };
+        const auto handler{ RE::TESDataHandler::GetSingleton() };
+        if (const auto loc{ handler->LookupForm<RE::BGSLocation>(form_id, plugin_name) }) {
+            logger::info("Found location {} (0x{:x}) in {}", loc->GetName(), form_id, plugin_name);
+            if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(v) }) {
+                logger::info("Found music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
+                Map::location_map[loc] = music_type;
+            }
+        }
+    }
+
+    logger::info("");
     logger::info(">-------------------------------------- Finished preparing distribution. Map size: {} --------------------------------------<", Map::distr_map.size());
     logger::info("");
 }

@@ -16,9 +16,14 @@ void Distributor::Distribute() noexcept
             music_type->tracks.clear();
         }
         for (const auto& track : tracks) {
-            logger::info("Distributing track 0x{:x} to music type {} (0x{:x})", track->GetFormID(), music_type_name, music_type_form_id);
+            logger::info("Distributing 0x{:x} to {} (0x{:x})", track->GetFormID(), music_type_name, music_type_form_id);
             music_type->tracks.emplace_back(track);
         }
+    }
+
+    for (const auto& [loc, music_type] : Map::location_map) {
+        logger::info("Updating location {} (0x{:x}) music type to {} (0x{:x})", loc->GetName(), loc->GetFormID(), music_type->GetFormEditorID(), music_type->GetFormID());
+        loc->musicType = music_type;
     }
 
     logger::info("");
