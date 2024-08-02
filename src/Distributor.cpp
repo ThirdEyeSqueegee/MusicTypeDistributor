@@ -1,4 +1,5 @@
 #include "Distributor.h"
+
 #include "Map.h"
 
 void Distributor::Distribute() noexcept
@@ -16,7 +17,7 @@ void Distributor::Distribute() noexcept
         }
         for (const auto& track : tracks) {
             logger::info("Distributing track 0x{:x} to music type {} (0x{:x})", track->GetFormID(), music_type_name, music_type_form_id);
-            music_type->tracks.push_back(track);
+            music_type->tracks.emplace_back(track);
         }
     }
 

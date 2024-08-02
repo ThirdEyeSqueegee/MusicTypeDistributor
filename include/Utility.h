@@ -13,11 +13,9 @@ public:
     {
         std::string result{};
 
-        for (const auto& s : strings) {
-            result += s + ',';
+        for (const auto& s : strings | std::ranges::views::join_with(',')) {
+            result += s;
         }
-
-        result = result.substr(0, result.size() - 1);
 
         return result;
     }
@@ -48,13 +46,12 @@ public:
         return result;
     }
 
-    static auto ToUnsignedInt(const std::string_view& s) noexcept { return static_cast<unsigned>(std::strtol(s.data(), nullptr, 0)); }
+    static auto ToUnsignedInt(const std::string_view& s) noexcept { return static_cast<unsigned>(std::stoul(s.data(), nullptr, 0)); }
 
     static FormIDAndPluginName GetFormIDAndPluginName(const std::string_view identifier) noexcept
     {
-        if (const auto tilde{ std::strchr(identifier.data(), '~') }) {
-            const auto tilde_pos{ static_cast<int>(tilde - identifier.data()) };
-            return { ToUnsignedInt(identifier.substr(0, tilde_pos)), identifier.substr(tilde_pos + 1).data() };
+        if (const auto tilde{ identifier.find('~') }; tilde != std::string_view::npos) {
+            return { ToUnsignedInt(identifier.substr(0, tilde)), identifier.substr(tilde + 1).data() };
         }
         logger::error("ERROR: Failed to get FormID and plugin name for {}", identifier);
 

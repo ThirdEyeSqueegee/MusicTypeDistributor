@@ -16,33 +16,47 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
     logger::info(">------------------------------------------------ Parsing _MUS.ini files... ------------------------------------------------<");
     logger::info("");
 
+    std::set<std::filesystem::path> mus_inis;
     for (std::error_code ec{}; const auto& file : std::filesystem::directory_iterator{ data_dir, ec }) {
         if (ec.value()) {
             logger::debug("ERROR CODE: {}", ec.value());
             continue;
         }
 
-        if (file.path().extension() != ".ini") {
+        const auto& path{ file.path() };
+
+        if (path.extension() != ".ini") {
             continue;
         }
 
-        const auto& filepath{ file.path() };
-        const auto  filename{ filepath.filename() };
-        const auto  filename_cstr{ filename.c_str() };
-        const auto  filename_str{ filename.string() };
-        if (!std::wcsstr(filename_cstr, pattern)) {
+        const auto filename{ path.filename() };
+        const auto filename_str{ filename.string() };
+        const auto filename_w{ filename.wstring() };
+
+        if (!filename_w.ends_with(pattern)) {
             continue;
         }
 
-        logger::info("Loading config file: {}", filename_str);
+        if (mus_inis.contains(path)) {
+            logger::warn("WARNING: Found duplicate _MUS.ini file: {}", filename_str);
+            continue;
+        }
 
-        ini.LoadFile(filepath.c_str());
+        mus_inis.insert(path);
+    }
+
+    for (const auto& f : mus_inis) {
+        const auto filename{ f.filename().string() };
+
+        logger::info("Loading config file: {}", filename);
+
+        ini.LoadFile(f.wstring().data());
 
         CSimpleIniA::TNamesDepend keys{};
         ini.GetAllKeys("General", keys);
 
         logger::debug("");
-        logger::debug("{} has {} keys", filename_str, keys.size());
+        logger::debug("{} has {} keys", filename, keys.size());
 
         for (const auto& k : keys) {
             CSimpleIniA::TNamesDepend values{};
