@@ -5,20 +5,26 @@
 class Map : public Singleton<Map>
 {
 public:
-    using TPrepMapType = phmap::parallel_flat_hash_map<std::string, std::unordered_set<std::string>>;
+    using TPrepMap = phmap::parallel_flat_hash_map<std::string, std::unordered_set<std::string>>;
 
-    using TMapPair      = std::pair<std::vector<RE::BGSMusicTrackFormWrapper*>, bool>;
-    using TDistrMapType = phmap::parallel_flat_hash_map<RE::BGSMusicType*, TMapPair>;
+    using TMapPair  = std::pair<std::vector<RE::BGSMusicTrackFormWrapper*>, bool>;
+    using TDistrMap = phmap::parallel_flat_hash_map<RE::BGSMusicType*, TMapPair>;
 
-    using TLocationPrepMapType = phmap::parallel_flat_hash_map<std::string, std::string>;
+    using TLocationRegionPrepMap = phmap::parallel_flat_hash_map<std::string, std::string>;
 
-    using TLocationMapType = phmap::parallel_flat_hash_map<RE::BGSLocation*, RE::BGSMusicType*>;
+    using TLocationMap = phmap::parallel_flat_hash_map<RE::BGSLocation*, RE::BGSMusicType*>;
 
-    inline static TPrepMapType prep_map;
+    using TRegionMap = phmap::parallel_flat_hash_map<RE::TESRegion*, RE::BGSMusicType*>;
 
-    inline static TDistrMapType distr_map;
+    inline static TPrepMap prep_map;
 
-    inline static TLocationPrepMapType location_prep_map;
+    inline static TDistrMap distr_map;
 
-    inline static TLocationMapType location_map;
+    inline static TLocationRegionPrepMap location_prep_map;
+
+    inline static TLocationMap location_map;
+
+    inline static TLocationRegionPrepMap region_prep_map;
+
+    inline static TRegionMap region_map;
 };

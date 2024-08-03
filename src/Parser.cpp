@@ -57,9 +57,6 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
         CSimpleIniA::TNamesDepend keys{};
         ini.GetAllKeys("General", keys);
 
-        logger::debug("");
-        logger::debug("{} has {} keys", filename, keys.size());
-
         for (const auto& k : keys) {
             CSimpleIniA::TNamesDepend values{};
             ini.GetAllValues("General", k.pItem, values);
@@ -69,7 +66,6 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
                 logger::debug("Added [{}: {}] to prep map", k.pItem, trimmed);
             }
         }
-        logger::debug("");
 
         if (ini.SectionExists("Location")) {
             CSimpleIniA::TNamesDepend loc_keys{};
@@ -81,6 +77,20 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
                 for (const auto& v : values) {
                     Map::location_prep_map[k.pItem] = v.pItem;
                     logger::debug("Added [{}: {}] to location prep map", k.pItem, v.pItem);
+                }
+            }
+        }
+
+        if (ini.SectionExists("Region")) {
+            CSimpleIniA::TNamesDepend reg_keys{};
+            ini.GetAllKeys("Region", reg_keys);
+
+            for (const auto& k : reg_keys) {
+                CSimpleIniA::TNamesDepend values{};
+                ini.GetAllValues("Region", k.pItem, values);
+                for (const auto& v : values) {
+                    Map::region_prep_map[k.pItem] = v.pItem;
+                    logger::debug("Added [{}: {}] to region prep map", k.pItem, v.pItem);
                 }
             }
         }
@@ -114,13 +124,21 @@ void Parser::PrepareDistrMap() noexcept
     }
 
     for (const auto& [k, v] : Map::location_prep_map) {
-        const auto [form_id, plugin_name]{ Utility::GetFormIDAndPluginName(k) };
-        const auto handler{ RE::TESDataHandler::GetSingleton() };
-        if (const auto loc{ handler->LookupForm<RE::BGSLocation>(form_id, plugin_name) }) {
-            logger::info("Found location {} (0x{:x}) in {}", loc->GetName(), form_id, plugin_name);
+        if (const auto location{ RE::TESForm::LookupByEditorID<RE::BGSLocation>(k) }) {
+            logger::info("Found location {} (0x{:x}) in {}", Utility::GetFormEditorID(location), location->GetFormID(), location->GetFile()->GetFilename());
             if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(v) }) {
-                logger::info("Found music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
-                Map::location_map[loc] = music_type;
+                logger::info("\tFound music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
+                Map::location_map[location] = music_type;
+            }
+        }
+    }
+
+    for (const auto& [k, v] : Map::region_prep_map) {
+        if (const auto region{ RE::TESForm::LookupByEditorID<RE::TESRegion>(k) }) {
+            logger::info("Found region {} (0x{:x}) in {}", Utility::GetFormEditorID(region), region->GetFormID(), region->GetFile()->GetFilename());
+            if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(v) }) {
+                logger::info("\tFound music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
+                Map::region_map[region] = music_type;
             }
         }
     }

@@ -2,6 +2,7 @@
 #include "Logging.h"
 #include "Parser.h"
 #include "Settings.h"
+#include "Utility.h"
 
 void Listener(SKSE::MessagingInterface::Message* message) noexcept
 {
@@ -13,6 +14,18 @@ void Listener(SKSE::MessagingInterface::Message* message) noexcept
         Settings::LoadSettings();
         Parser::PrepareDistrMap();
         Distributor::Distribute();
+        if (Settings::dump_music_tracks) {
+            Utility::DumpMusicTracks();
+        }
+        if (Settings::dump_music_types) {
+            Utility::DumpMusicTypes();
+        }
+        if (Settings::dump_locations) {
+            Utility::DumpLocations();
+        }
+        if (Settings::dump_regions) {
+            Utility::DumpRegions();
+        }
     }
 }
 
