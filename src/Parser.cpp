@@ -2,6 +2,7 @@
 
 #include "Map.h"
 #include "Utility.h"
+#include "parallel_hashmap/btree.h"
 
 void Parser::ParseINIs(CSimpleIniA& ini) noexcept
 {
@@ -16,7 +17,8 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
     logger::info(">------------------------------------------------ Parsing _MUS.ini files... ------------------------------------------------<");
     logger::info("");
 
-    std::set<std::filesystem::path> mus_inis;
+    phmap::btree_set<std::filesystem::path> mus_inis;
+
     for (std::error_code ec{}; const auto& file : std::filesystem::directory_iterator{ data_dir, ec }) {
         if (ec.value()) {
             logger::debug("ERROR CODE: {}", ec.value());
@@ -62,7 +64,7 @@ void Parser::ParseINIs(CSimpleIniA& ini) noexcept
             ini.GetAllValues("General", k.pItem, values);
             for (const auto& v : values) {
                 const auto trimmed{ std::regex_replace(std::string{ v.pItem }, comma_space, ",") };
-                Map::prep_map[k.pItem].insert(trimmed);
+                Map::prep_map[k.pItem].insert_range(Utility::Split(trimmed));
                 logger::debug("Added [{}: {}] to prep map", k.pItem, trimmed);
             }
         }
@@ -117,8 +119,7 @@ void Parser::PrepareDistrMap() noexcept
         }
         if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(k_copy) }) {
             logger::info("Found music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
-            const auto tokens{ Utility::Split(v) };
-            const auto form_id_vec{ Utility::BuildFormIDVec(tokens) };
+            const auto form_id_vec{ Utility::BuildFormIDVec(v) };
             Map::distr_map[music_type] = { form_id_vec, clear_list };
         }
     }
@@ -128,7 +129,7 @@ void Parser::PrepareDistrMap() noexcept
             logger::info("Found location {} (0x{:x}) in {}", Utility::GetFormEditorID(location), location->GetFormID(), location->GetFile()->GetFilename());
             if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(v) }) {
                 logger::info("\tFound music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
-                Map::location_map[location] = music_type;
+                Map::location_distr_map[location] = music_type;
             }
         }
     }
@@ -138,7 +139,7 @@ void Parser::PrepareDistrMap() noexcept
             logger::info("Found region {} (0x{:x}) in {}", Utility::GetFormEditorID(region), region->GetFormID(), region->GetFile()->GetFilename());
             if (const auto music_type{ RE::TESForm::LookupByEditorID<RE::BGSMusicType>(v) }) {
                 logger::info("\tFound music type {} (0x{:x})", music_type->formEditorID, music_type->GetFormID());
-                Map::region_map[region] = music_type;
+                Map::region_distr_map[region] = music_type;
             }
         }
     }

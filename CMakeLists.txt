@@ -3,7 +3,7 @@ message("Using toolchain file ${CMAKE_TOOLCHAIN_FILE}.")
 
 project(
   MusicTypeDistributor
-  VERSION 1.3.0
+  VERSION 1.3.1
   LANGUAGES CXX
 )
 set(CMAKE_CXX_STANDARD 23)

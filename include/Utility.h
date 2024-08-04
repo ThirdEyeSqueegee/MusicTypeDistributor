@@ -9,27 +9,18 @@ struct FormIDAndPluginName
 class Utility : public Singleton<Utility>
 {
 public:
-    static auto Join(const std::unordered_set<std::string>& strings) noexcept
+    static auto Split(std::string s) noexcept
     {
-        std::string result{};
-
-        for (const auto& s : strings | std::ranges::views::join_with(',')) {
-            result += s;
-        }
-
-        return result;
-    }
-
-    static auto Split(const std::unordered_set<std::string>& strings) noexcept
-    {
-        auto s{ Join(strings) };
-
         std::vector<std::string> result{};
 
         std::size_t pos{};
         while ((pos = s.find(',')) != std::string::npos) {
             result.emplace_back(s.substr(0, pos));
             s.erase(0, pos + 1);
+        }
+
+        if (!s.empty()) {
+            result.emplace_back(s);
         }
 
         return result;
@@ -69,8 +60,8 @@ public:
         case RE::FormType::SoundRecord:
             return form->GetFormEditorID();
         default: {
-            static auto tweaks{ REX::W32::GetModuleHandleW(L"po3_Tweaks") };
-            static auto func{ reinterpret_cast<TGetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID")) };
+            static auto po3_tweaks{ REX::W32::GetModuleHandleW(L"po3_Tweaks") };
+            static auto func{ reinterpret_cast<TGetFormEditorID>(GetProcAddress(po3_tweaks, "GetFormEditorID")) };
             if (func) {
                 return func(form->formID);
             }
@@ -79,7 +70,7 @@ public:
         }
     }
 
-    static auto ToFormID(const std::string_view& s) noexcept { return static_cast<RE::FormID>(std::stoul(s.data(), nullptr, 16)); }
+    static auto ToFormID(const std::string& s) noexcept { return static_cast<RE::FormID>(std::stoul(s, nullptr, 16)); }
 
     static FormIDAndPluginName GetFormIDAndPluginName(const std::string& identifier) noexcept
     {
@@ -91,7 +82,7 @@ public:
         return { 0, "" };
     }
 
-    static auto BuildFormIDVec(const std::vector<std::string>& tokens) noexcept
+    static auto BuildFormIDVec(const std::unordered_set<std::string>& tokens) noexcept
     {
         std::vector<RE::BGSMusicTrackFormWrapper*> result;
 

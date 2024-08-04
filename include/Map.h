@@ -22,9 +22,9 @@ public:
 
     inline static TLocationRegionPrepMap location_prep_map;
 
-    inline static TLocationMap location_map;
+    inline static TLocationMap location_distr_map;
 
     inline static TLocationRegionPrepMap region_prep_map;
 
-    inline static TRegionMap region_map;
+    inline static TRegionMap region_distr_map;
 };

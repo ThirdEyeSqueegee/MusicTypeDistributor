@@ -22,18 +22,14 @@ void Distributor::Distribute() noexcept
         }
     }
 
-    for (const auto& [location, music_type] : Map::location_map) {
+    for (const auto& [location, music_type] : Map::location_distr_map) {
         logger::info("Updating location {} (0x{:x}) music type to {} (0x{:x})", Utility::GetFormEditorID(location), location->GetFormID(), Utility::GetFormEditorID(music_type),
                      music_type->GetFormID());
         location->musicType = music_type;
     }
 
-    for (const auto& [region, music_type] : Map::region_map) {
+    for (const auto& [region, music_type] : Map::region_distr_map) {
         const auto reg_edid{ Utility::GetFormEditorID(region) };
-        if (!region->dataList || region->dataList->regionDataList.empty()) {
-            logger::warn("WARNING: No region data list found for region {} (0x{:x}). Skipping...", reg_edid, region->GetFormID());
-            continue;
-        }
         for (const auto& reg_data : region->dataList->regionDataList) {
             const auto manager{ RE::TESDataHandler::GetSingleton()->GetRegionDataManager() };
             if (const auto reg_data_sound{ manager->AsRegionDataSound(reg_data) }) {
